@@ -10,19 +10,16 @@ import passport from "passport";
 import {Strategy} from "passport-jwt";
 import {ExtractJwt} from "passport-jwt";
 import {errorHandler} from "./middlewares/errorHandler.js";
-
-await connectDb();
+import {config} from "./config/config.js";
 
 const app = express();
-const port = process.env.p || 8000;
-const dirname = 'logs';
 
 let options = {
-    secretOrKey: process.env.SECRET_KEY,
+    secretOrKey: config.secretKey,
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken()
 };
 
-passport.use(new Strategy(options, async function (payload, next) {
+passport.use(new Strategy(options, async (payload, next) => {
     try {
         const user = await User.findOne({_id: payload.id});
         if (!user) {
@@ -34,13 +31,14 @@ passport.use(new Strategy(options, async function (payload, next) {
     }
 }));
 
-
 let logStream = rfs.createStream('app.log', {
-    interval: '1d', // rotate daily
-    path: path.join('runtime', dirname)
-})
+    interval: '1d',
+    path: path.join('runtime', config.logDir)
+});
 
-app.use(passport.initialize())
+await connectDb();
+
+app.use(passport.initialize());
 
 app.use(morgan('common', {stream: logStream}));
 
@@ -50,4 +48,4 @@ app.use('/api', router);
 
 app.use(errorHandler);
 
-app.listen(port, () => console.log('Server started on ' + port))
+app.listen(config.appPort, () => console.log('Server started on ' + config.appPort))

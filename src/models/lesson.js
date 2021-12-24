@@ -1,4 +1,5 @@
-import  mongoose  from "mongoose";
+import mongoose from "mongoose";
+
 const Schema = mongoose.Schema;
 
 const lessonSchema = new mongoose.Schema({
@@ -21,4 +22,4 @@ const lessonSchema = new mongoose.Schema({
 
 const Lesson = mongoose.model("lesson", lessonSchema);
 
-export { Lesson }
+export {Lesson}

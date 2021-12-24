@@ -1,11 +1,10 @@
 import express from "express";
-
-const coursesRouter = express.Router();
 import {Course} from "../models/course.js"
 import {isCourseOwner} from "../middlewares/authorization.js";
 import {asyncErrorHandler} from "../middlewares/asyncErrorHandler.js";
 import {ApiException} from "../utils/ApiException.js";
 
+const coursesRouter = express.Router();
 
 coursesRouter.route('/').post(asyncErrorHandler(async (req,res) => {
     const user = req.user;

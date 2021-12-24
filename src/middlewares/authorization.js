@@ -9,14 +9,14 @@ async function isCourseOwner(req, res, next) {
 
 async function isCourseStudent(req, res, next) {
     const course = req.course ?
-    await req.course.populate({
-        path: 'students',
-        match: {_id: req.user._id}
-    }).execPopulate() :
-    await Course.findOne({name: req.params.courseName}).populate({
-        path: 'students',
-        match: {_id: req.user._id}
-    });
+        await req.course.populate({
+            path: 'students',
+            match: {_id: req.user._id}
+        }).execPopulate() :
+        await Course.findOne({name: req.params.courseName}).populate({
+            path: 'students',
+            match: {_id: req.user._id}
+        });
 
     res.isCourseStudent = course.students.length > 0;
 
@@ -24,6 +24,6 @@ async function isCourseStudent(req, res, next) {
     next();
 }
 
-export { isCourseStudent, isCourseOwner }
+export {isCourseStudent, isCourseOwner}
 
 

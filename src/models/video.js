@@ -1,4 +1,5 @@
-import  mongoose  from "mongoose";
+import mongoose from "mongoose";
+
 const Schema = mongoose.Schema;
 
 const videoSchema = new mongoose.Schema({
@@ -12,4 +13,4 @@ const videoSchema = new mongoose.Schema({
 
 const Video = mongoose.model("video", videoSchema);
 
-export { Video }
+export {Video}
