@@ -18,11 +18,6 @@ const courseSchema = new mongoose.Schema({
     }]
 });
 
-courseSchema.methods.isValidPassword = async function(password) {
-    const user = this;
-    return user.password === password;
-}
-
 const Course = mongoose.model("course", courseSchema);
 
 export { Course }

@@ -1,7 +1,11 @@
 import {Course} from "../models/course.js";
+import {ApiException} from "../utils/ApiException.js";
 
 async function isCourseOwner(req, res, next) {
     const course = await Course.findOne({name: req.params.courseName}).populate('author', ['_id']);
+    if (!course) {
+        throw new ApiException(404, 'Course not found');
+    }
     req.isCourseOwner = String(req.user._id) === String(course.author._id);
     req.course = course;
     next();
@@ -18,8 +22,11 @@ async function isCourseStudent(req, res, next) {
             match: {_id: req.user._id}
         });
 
-    res.isCourseStudent = course.students.length > 0;
+    if (!course) {
+        throw new ApiException(404, 'Course not found');
+    }
 
+    res.isCourseStudent = course.students.length > 0;
     req.course = course;
     next();
 }

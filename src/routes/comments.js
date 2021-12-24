@@ -11,8 +11,25 @@ commentsRouter.route('/').get(auth.isCourseOwner, auth.isCourseStudent, asyncErr
         throw new ApiException(403, 'You cannot view comments for this lesson.');
     }
 
-    const comments = await Comment.find();
-    res.send(comments);
+    const course = await req.course.populate({
+        path: 'lessons',
+        math: {name: req.params.lessonName},
+        justOne: true,
+        populate: {
+            path: 'comments',
+            select: ['text'],
+            populate: {
+                path: 'author',
+                select: ['_id', 'name']
+            }
+        },
+    }).execPopulate();
+
+    if (!course.lessons) {
+        throw new ApiException(404, 'Lesson not found');
+    }
+
+    res.send(course.lessons.comments);
 }));
 
 commentsRouter.route('/').post(auth.isCourseOwner, auth.isCourseStudent, asyncErrorHandler(async (req, res) => {
@@ -20,12 +37,21 @@ commentsRouter.route('/').post(auth.isCourseOwner, auth.isCourseStudent, asyncEr
         throw new ApiException(403, 'You cannot leave comments for this lesson.');
     }
 
-    const course = await req.course.populate({path: 'lessons', match: {name: req.params.lessonName}}).execPopulate();
-    const comment = new Comment(req.body);
-    comment.author = req.user._id;
-    await comment.save();
-    course.lessons[0].comments.push(comment);
-    await course.lessons[0].save()
+    const course = await req.course.populate({
+        path: 'lessons',
+        match: {name: req.params.lessonName},
+        justOne: true
+    }).execPopulate();
+
+    if (!course.lessons) {
+        throw new ApiException(404, 'Lesson not found');
+    }
+
+    const comment = await Comment.create({...req.body, ...{author: req.user._id}});
+
+    course.lessons.comments.push(comment);
+    await course.lessons.save()
+
     res.send(comment);
 }));
 

@@ -13,13 +13,14 @@ lessonsRouter.route('/').post(auth.isCourseOwner, asyncErrorHandler(async (req, 
     }
 
     const video = await Video.findById(req.body.videoId).exec();
-    const lesson = new Lesson(req.body);
-    lesson.owner = req.course._id;
-    await lesson.save();
+    const lesson = await Lesson.create({...req.body, ...{owner: req.course._id}});
+
     video.owner = lesson._id;
     await video.save();
+
     req.course.lessons.push(lesson);
     await req.course.save();
+
     res.send(lesson);
 }));
 
@@ -28,9 +29,12 @@ lessonsRouter.route('/:lessonName').get(auth.isCourseOwner, auth.isCourseStudent
         throw new ApiException(403, 'You cannot view this lesson.');
     }
 
-    const course = await req.course.populate({path: 'lessons', match: {name: req.params.lessonName}}).execPopulate();
-    res.send(course.lessons[0]);
-}));
+    const course = await req.course.populate({path: 'lessons', match: {name: req.params.lessonName}, justOne: true}).execPopulate();
+    if (!course.lessons) {
+        throw new ApiException(404, 'Lesson not found');
+    }
 
+    res.send(course.lessons);
+}));
 
 export {lessonsRouter}

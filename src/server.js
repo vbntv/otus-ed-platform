@@ -11,6 +11,8 @@ import {Strategy} from "passport-jwt";
 import {ExtractJwt} from "passport-jwt";
 import {errorHandler} from "./middlewares/errorHandler.js";
 import {config} from "./config/config.js";
+import {asyncErrorHandler} from "./middlewares/asyncErrorHandler.js";
+import {ApiException} from "./utils/ApiException.js";
 
 const app = express();
 
@@ -19,17 +21,13 @@ let options = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken()
 };
 
-passport.use(new Strategy(options, async (payload, next) => {
-    try {
-        const user = await User.findOne({_id: payload.id});
-        if (!user) {
-            return next(null, false, {message: 'User not found'});
-        }
-        return next(null, user);
-    } catch (e) {
-        throw new Error(e.message)
+passport.use(new Strategy(options, asyncErrorHandler(async (payload, next) => {
+    const user = await User.findOne({_id: payload.id});
+    if (!user) {
+        throw new ApiException(404, 'User not found');
     }
-}));
+    return next(null, user);
+})));
 
 let logStream = rfs.createStream('app.log', {
     interval: '1d',
