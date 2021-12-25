@@ -19,7 +19,7 @@ const videoUpload = multer({
         if (!file.originalname.match(/\.(mp4|MPEG-4|mkv|MOV)$/)) {
             return cb(new Error('Please upload a video'));
         }
-        cb(undefined, true);
+        cb(null, true);
     }
 })
 
