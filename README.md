@@ -1,6 +1,6 @@
 Запуск:
 
-docker-composer up
+docker-compose up
 
 Задача:
 
